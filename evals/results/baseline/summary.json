@@ -1,4 +1,103 @@
 {
+  "engineering": {
+    "model_id": {
+      "blocking": false,
+      "note": "Report-only; value returned by the model API, not the requested alias.",
+      "responses": [],
+      "status": "not_available_offline",
+      "values": []
+    },
+    "prompt_size": {
+      "blocking": false,
+      "prompts": [
+        {
+          "characters": 7558,
+          "exact_for_configured_tokenizer": false,
+          "method": "lexical_estimate_no_model_tokenizer_installed",
+          "prompt": "initial",
+          "tokens": 1786
+        },
+        {
+          "characters": 18254,
+          "exact_for_configured_tokenizer": false,
+          "method": "lexical_estimate_no_model_tokenizer_installed",
+          "prompt": "negotiation:above_max_hold",
+          "tokens": 4184
+        },
+        {
+          "characters": 18254,
+          "exact_for_configured_tokenizer": false,
+          "method": "lexical_estimate_no_model_tokenizer_installed",
+          "prompt": "negotiation:max_target_probing",
+          "tokens": 4184
+        },
+        {
+          "characters": 18254,
+          "exact_for_configured_tokenizer": false,
+          "method": "lexical_estimate_no_model_tokenizer_installed",
+          "prompt": "negotiation:standard_successful_call",
+          "tokens": 4184
+        },
+        {
+          "characters": 18254,
+          "exact_for_configured_tokenizer": false,
+          "method": "lexical_estimate_no_model_tokenizer_installed",
+          "prompt": "negotiation:multi_round_negotiation",
+          "tokens": 4184
+        },
+        {
+          "characters": 18254,
+          "exact_for_configured_tokenizer": false,
+          "method": "lexical_estimate_no_model_tokenizer_installed",
+          "prompt": "negotiation:ambiguous_acceptance",
+          "tokens": 4184
+        },
+        {
+          "characters": 18254,
+          "exact_for_configured_tokenizer": false,
+          "method": "lexical_estimate_no_model_tokenizer_installed",
+          "prompt": "negotiation:missing_contact_details",
+          "tokens": 4184
+        },
+        {
+          "characters": 18254,
+          "exact_for_configured_tokenizer": false,
+          "method": "lexical_estimate_no_model_tokenizer_installed",
+          "prompt": "negotiation:load_presentation",
+          "tokens": 4184
+        },
+        {
+          "characters": 18254,
+          "exact_for_configured_tokenizer": false,
+          "method": "lexical_estimate_no_model_tokenizer_installed",
+          "prompt": "negotiation:human_transfer_valid_request",
+          "tokens": 4184
+        },
+        {
+          "characters": 18254,
+          "exact_for_configured_tokenizer": false,
+          "method": "lexical_estimate_no_model_tokenizer_installed",
+          "prompt": "negotiation:human_transfer_hard_negotiation",
+          "tokens": 4184
+        }
+      ]
+    },
+    "time_to_first_token": {
+      "average_ms": null,
+      "blocking": false,
+      "note": "Report-only; measured to first streamed output_text delta.",
+      "samples": [],
+      "status": "not_available_offline",
+      "unit": "milliseconds"
+    },
+    "tool_call_validity": {
+      "blocking": true,
+      "invalid_calls": [],
+      "passed": true,
+      "total_calls": 14,
+      "valid_calls": 14
+    }
+  },
   "families": {
     "above_max_hold": {
       "pass_rate": 1.0,
@@ -64,7 +163,7 @@
       "total": 1
     }
   },
-  "generated_at": "2026-09-24T17:55:36.114266+00:00",
+  "generated_at": "2026-09-24T18:09:01.651236+00:00",
   "grades": [
     {
       "blocking": true,
@@ -493,6 +592,7 @@
   "schema_version": 1,
   "summary": {
     "blocking_failures": [],
+    "engineering_blocking_failures": [],
     "family_threshold_failures": [],
     "hard_pass": true,
     "judge_below_threshold": [],

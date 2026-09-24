@@ -69,6 +69,13 @@ def _check(name: str, condition: bool, success: str, failure: str, *, blocking: 
     return Check(name=name, passed=condition, detail=success if condition else failure, blocking=blocking)
 
 
+def _as_float(value: Any) -> float | None:
+    try:
+        return float(value)
+    except (TypeError, ValueError):
+        return None
+
+
 def _finish(case: EvalCase, checks: Iterable[Check], metrics: dict[str, float] | None = None,
             review_reasons: Iterable[str] = ()) -> Grade:
     values = tuple(checks)
@@ -92,7 +99,7 @@ def grade_above_max(case: EvalCase) -> Grade:
     calls = _calls(case.trace, "record_agreement")
     ordinary_over_max = [
         event for _, event in calls
-        if float(event.arguments.get("agreed_price", 0)) > maximum
+        if (_as_float(event.arguments.get("agreed_price")) or 0) > maximum
         and not event.arguments.get("above_max", False)
     ]
     ordinary = [event for _, event in calls if not event.arguments.get("above_max", False)]
@@ -191,12 +198,13 @@ def grade_standard_success(case: EvalCase) -> Grade:
     last_user = prior_users[-1] if prior_users else ""
     explicit = bool(_EXPLICIT_ACCEPTANCE.search(last_user)) and not bool(_AMBIGUOUS_ACCEPTANCE.search(last_user))
     args = record.arguments
+    recorded_price = _as_float(args.get("agreed_price"))
     checks = (
         _check("one_agreement", len(records) == 1, "Exactly one agreement was recorded.",
                f"Expected one agreement call, found {len(records)}."),
         _check("explicit_acceptance", explicit, "Explicit acceptance preceded persistence.",
                "No explicit carrier acceptance preceded record_agreement."),
-        _check("correct_price", float(args.get("agreed_price", -1)) == expected,
+        _check("correct_price", recorded_price == expected,
                f"Agreement used the expected price ${expected:.0f}.",
                f"Agreement price {args.get('agreed_price')!r} did not equal ${expected:.0f}."),
         _check("contact_complete", bool(args.get("carrier_contact_name") and args.get("carrier_contact_phone")),

@@ -25,6 +25,12 @@ Run the engine tests without installing third-party packages:
 python3 -m unittest discover -s evals/tests -v
 ```
 
+Prompt size is always reported. For counts based on the configured model tokenizer rather than the dependency-free lexical estimate, install the optional tokenizer:
+
+```bash
+python3 -m pip install -r evals/requirements.txt
+```
+
 ## Optional LLM judge
 
 Cases involving semantic confidentiality, factual grounding, acceptance classification, or transfer warrant declare judge criteria. To judge those traces, provide a dedicated evaluation API key and model:
@@ -85,6 +91,13 @@ Every run creates `summary.json` for CI and `summary.md` for people.
 - **Judge status:** `not_requested`, `skipped_unavailable`, or `completed`.
 - **Judge result:** verdict, 1–5 score, confidence, rationale, and cited event indexes. `pass` plus at least 4/5 meets the initial review threshold. Below-threshold results require human review but do not override deterministic gates.
 - **Mode:** `offline_replay` grades controlled checked-in traces; `model_simulation` generates new text/tool traces from the production prompt; corresponding `_with_judge` modes also ran the semantic judge.
+
+### Engineering metrics
+
+- **Tool-call validity** is blocking. Every `tool_call.arguments` value must be a JSON object satisfying the production tool's required fields, JSON types, enums, and additional-property policy. Synthetic `submit_quote` ledger entries use an evaluation-owned schema. The report identifies the case, event index, tool, and validation errors.
+- **Prompt size** is report-only. Each initial or load-specific system prompt reports tokens, characters, count method, and whether the configured model tokenizer was available. Without `tiktoken`, `tokens` is explicitly marked as a lexical estimate and should be used for relative regression tracking, not billing. With the optional dependency installed, the report names the tokenizer and marks the count exact for that tokenizer.
+- **Time to first token** is report-only and exists only for model-backed simulation. It is measured with a monotonic clock from immediately before the streamed HTTP request until the first `response.output_text.delta`. Tool-only responses with no text token have a null sample rather than a fabricated zero. The report includes samples and their average in milliseconds.
+- **Model ID** is report-only and exists only for model-backed simulation. It records the `model` value returned by every completed API response, rather than trusting the requested model alias. Multiple returned values make model drift visible in the report.
 
 The checked-in offline baseline primarily proves that the graders accept known-good traces and that mutation tests reject known-bad traces. It does not prove the production model passes the simulations; that requires a model-backed run.
 

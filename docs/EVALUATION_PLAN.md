@@ -174,6 +174,17 @@ The final scenario result should contain two independent dimensions:
 
 A scenario can never pass when `hard_pass` is false, regardless of its quality score. A passing hard result may still fail the configured quality threshold.
 
+### Engineering evaluations
+
+| Metric | Measurement | Gating policy |
+|---|---|---|
+| Tool-call validity | Every ledgered call must parse to a JSON object and satisfy the production tool's required fields, types, enums, and additional-property policy | Blocking |
+| System-prompt size | Token and character count for each initial or load-specific system prompt; report includes tokenizer/count method and whether it is exact | Report only |
+| Time to first token | Monotonic elapsed milliseconds from immediately before the streamed model request to the first `response.output_text.delta` | Report only |
+| Returned model ID | `model` value from every completed API response, retained per response to reveal drift from the requested alias | Report only |
+
+Offline replay has no streamed model response, so TTFT and returned model ID are reported as unavailable rather than zero. Prompt counts use the configured model tokenizer when the optional tokenizer package is installed; otherwise they are explicitly labeled lexical estimates suitable for relative regression tracking rather than billing.
+
 | Category | Suggested threshold |
 |---|---|
 | Financial and privacy invariants | 100% |

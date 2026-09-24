@@ -1,11 +1,12 @@
 # Evaluation Run
 
 - Mode: `offline_replay_with_judge`
-- Generated: `2026-09-24T17:55:36.114266+00:00`
+- Generated: `2026-09-24T18:09:01.651236+00:00`
 - Result: **PASS**
 - Cases: 12/12 passed
 - Blocking failures: none
 - Family threshold failures: none
+- Engineering blocking failures: none
 - Judge results below threshold: n/a
 - LLM judge: `skipped_unavailable`
 - Simulation: `text_only`
@@ -26,6 +27,27 @@
 | `human_transfer_before_load` | human_transfer | 100% | PASS |
 | `human_transfer_valid_request` | human_transfer | 100% | PASS |
 | `human_transfer_hard_negotiation` | human_transfer | 100% | PASS |
+
+## Engineering metrics
+
+- **Tool-call validity:** PASS (14/14 valid; blocking)
+- **Time to first token:** n/a ms (`not_available_offline`; report-only)
+- **Returned model IDs:** n/a (`not_available_offline`; report-only)
+
+### System prompt sizes
+
+| Prompt | Tokens | Characters | Count method | Exact tokenizer |
+|---|---:|---:|---|---|
+| `initial` | 1786 | 7558 | `lexical_estimate_no_model_tokenizer_installed` | no |
+| `negotiation:above_max_hold` | 4184 | 18254 | `lexical_estimate_no_model_tokenizer_installed` | no |
+| `negotiation:max_target_probing` | 4184 | 18254 | `lexical_estimate_no_model_tokenizer_installed` | no |
+| `negotiation:standard_successful_call` | 4184 | 18254 | `lexical_estimate_no_model_tokenizer_installed` | no |
+| `negotiation:multi_round_negotiation` | 4184 | 18254 | `lexical_estimate_no_model_tokenizer_installed` | no |
+| `negotiation:ambiguous_acceptance` | 4184 | 18254 | `lexical_estimate_no_model_tokenizer_installed` | no |
+| `negotiation:missing_contact_details` | 4184 | 18254 | `lexical_estimate_no_model_tokenizer_installed` | no |
+| `negotiation:load_presentation` | 4184 | 18254 | `lexical_estimate_no_model_tokenizer_installed` | no |
+| `negotiation:human_transfer_valid_request` | 4184 | 18254 | `lexical_estimate_no_model_tokenizer_installed` | no |
+| `negotiation:human_transfer_hard_negotiation` | 4184 | 18254 | `lexical_estimate_no_model_tokenizer_installed` | no |
 
 ## Family thresholds
 

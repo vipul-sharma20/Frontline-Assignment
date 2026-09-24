@@ -5,6 +5,7 @@ from __future__ import annotations
 import json
 import os
 import re
+import time
 import urllib.error
 import urllib.request
 from dataclasses import replace
@@ -99,18 +100,46 @@ def _api_call(payload: dict[str, Any]) -> dict[str, Any]:
     key = os.getenv("OPENAI_API_KEY")
     if not key:
         raise RuntimeError("OPENAI_API_KEY is required for --model")
+    streamed_payload = dict(payload)
+    streamed_payload["stream"] = True
     request = urllib.request.Request(
         "https://api.openai.com/v1/responses",
-        data=json.dumps(payload).encode("utf-8"),
+        data=json.dumps(streamed_payload).encode("utf-8"),
         headers={"Authorization": f"Bearer {key}", "Content-Type": "application/json"},
         method="POST",
     )
+    started = time.perf_counter()
+    first_token_at: float | None = None
+    completed: dict[str, Any] | None = None
     try:
         with urllib.request.urlopen(request, timeout=90) as response:
-            return json.loads(response.read().decode("utf-8"))
+            for raw_line in response:
+                line = raw_line.decode("utf-8").strip()
+                if not line.startswith("data: "):
+                    continue
+                data = line[6:]
+                if data == "[DONE]":
+                    continue
+                event = json.loads(data)
+                if event.get("type") == "response.output_text.delta" and first_token_at is None:
+                    first_token_at = time.perf_counter()
+                if event.get("type") == "response.completed":
+                    completed = event.get("response")
     except urllib.error.HTTPError as exc:
         detail = exc.read().decode("utf-8", errors="replace")[:1000]
         raise RuntimeError(f"agent API returned HTTP {exc.code}: {detail}") from exc
+    if completed is None:
+        raise RuntimeError("stream ended without response.completed")
+    usage = completed.get("usage") or {}
+    completed["_eval_telemetry"] = {
+        "time_to_first_token_ms": (
+            round((first_token_at - started) * 1000, 3) if first_token_at is not None else None
+        ),
+        "model_id": completed.get("model"),
+        "input_tokens": usage.get("input_tokens"),
+        "output_tokens": usage.get("output_tokens"),
+    }
+    return completed
 
 
 def _message_text(item: dict[str, Any]) -> str:
@@ -133,6 +162,7 @@ def simulate_case(case: EvalCase, contract: ProductionContract | None = None) ->
     history: list[dict[str, Any]] = []
     events: list[Event] = []
     fakes = FakeServices.for_case(case, _load_context(case))
+    api_responses: list[dict[str, Any]] = []
     if negotiation:
         events.append(Event(kind="tool_result", name="get_load_context", result={"status": "success"}))
 
@@ -150,6 +180,10 @@ def simulate_case(case: EvalCase, contract: ProductionContract | None = None) ->
                     "tool_choice": "auto",
                 }
             )
+            if response.get("_eval_telemetry"):
+                api_responses.append(
+                    {"case_id": case.id, **response["_eval_telemetry"]}
+                )
             output = response.get("output", [])
             history.extend(output)
             function_calls = [item for item in output if item.get("type") == "function_call"]
@@ -162,7 +196,11 @@ def simulate_case(case: EvalCase, contract: ProductionContract | None = None) ->
                 break
             for item in function_calls:
                 name = str(item["name"])
-                arguments = json.loads(item.get("arguments") or "{}")
+                raw_arguments = item.get("arguments") or "{}"
+                try:
+                    arguments = json.loads(raw_arguments)
+                except (json.JSONDecodeError, TypeError):
+                    arguments = {"__parse_error__": str(raw_arguments)}
                 events.append(Event(kind="tool_call", name=name, arguments=arguments))
                 result, side_effects = fakes.handle_tool(name, arguments)
                 events.append(Event(kind="tool_result", name=name, result=result))
@@ -189,5 +227,6 @@ def simulate_case(case: EvalCase, contract: ProductionContract | None = None) ->
         "agent_model": os.getenv("EVAL_AGENT_MODEL", "gpt-4.1"),
         "simulation": True,
         "fake_services": fakes.report(),
+        "api_responses": api_responses,
     }
     return replace(case, trace=Trace(case.id, tuple(events), metadata))

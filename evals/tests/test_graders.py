@@ -7,10 +7,11 @@ from unittest.mock import patch
 
 from evals.graders import grade_case
 from evals.fakes import FakeServices
+from evals.engineering import collect_engineering
 from evals.models import Event, Trace
 from evals.production import load_production_contract
 from evals.runner import load_cases, run_cases
-from evals.simulate import simulate_case
+from evals.simulate import _api_call, simulate_case
 
 
 class EvaluationSuiteTests(unittest.TestCase):
@@ -154,6 +155,69 @@ class EvaluationSuiteTests(unittest.TestCase):
         self.assertEqual(report["business_network_calls"], 0)
         self.assertEqual(fakes.phone_first.lookup("+13125550199")["status"], "unknown")
         self.assertEqual(len(fakes.phone_first.calls), 1)
+
+    def test_tool_schema_violation_is_an_engineering_blocker(self):
+        case = self.cases["standard_successful_call"]
+        events = list(case.trace.events)
+        record_index = next(
+            index for index, event in enumerate(events)
+            if event.kind == "tool_call" and event.name == "record_agreement"
+        )
+        events[record_index] = replace(
+            events[record_index],
+            arguments={"agreed_price": "two thousand", "unexpected": True},
+        )
+        mutated = replace(case, trace=Trace(case.id, tuple(events), case.trace.metadata))
+        report = run_cases([mutated])
+        self.assertFalse(report["summary"]["hard_pass"])
+        self.assertEqual(report["summary"]["engineering_blocking_failures"], ["tool_call_validity"])
+        invalid = report["engineering"]["tool_call_validity"]["invalid_calls"]
+        self.assertTrue(any("expected number" in error for error in invalid[0]["errors"]))
+
+    def test_engineering_telemetry_is_report_only(self):
+        case = self.cases["max_target_probing"]
+        trace = replace(
+            case.trace,
+            metadata={
+                "api_responses": [
+                    {"case_id": case.id, "model_id": "returned-model-2026-09-01", "time_to_first_token_ms": 123.4}
+                ]
+            },
+        )
+        generated = replace(case, trace=trace)
+        engineering = collect_engineering([generated], load_production_contract())
+        self.assertEqual(engineering["time_to_first_token"]["average_ms"], 123.4)
+        self.assertEqual(engineering["model_id"]["values"], ["returned-model-2026-09-01"])
+        self.assertFalse(engineering["time_to_first_token"]["blocking"])
+        self.assertFalse(engineering["model_id"]["blocking"])
+
+    def test_streaming_api_measures_first_text_token_and_returned_model(self):
+        class FakeResponse:
+            def __enter__(self):
+                return self
+
+            def __exit__(self, *_):
+                return False
+
+            def __iter__(self):
+                return iter(
+                    [
+                        b'data: {"type":"response.output_text.delta","delta":"Hi"}\n',
+                        b'data: {"type":"response.completed","response":{"model":"returned-model-id","output":[],"usage":{"input_tokens":10,"output_tokens":1}}}\n',
+                        b'data: [DONE]\n',
+                    ]
+                )
+
+        with (
+            patch.dict(os.environ, {"OPENAI_API_KEY": "test-only"}, clear=True),
+            patch("evals.simulate.urllib.request.urlopen", return_value=FakeResponse()),
+            patch("evals.simulate.time.perf_counter", side_effect=[10.0, 10.125]),
+        ):
+            response = _api_call({"model": "requested-alias", "input": "hello"})
+        telemetry = response["_eval_telemetry"]
+        self.assertEqual(telemetry["time_to_first_token_ms"], 125.0)
+        self.assertEqual(telemetry["model_id"], "returned-model-id")
+        self.assertEqual(telemetry["input_tokens"], 10)
 
 
 if __name__ == "__main__":

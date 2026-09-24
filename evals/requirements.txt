@@ -1,0 +1,2 @@
+# Optional: enables model-tokenizer prompt counts instead of lexical estimates.
+tiktoken>=0.7,<1

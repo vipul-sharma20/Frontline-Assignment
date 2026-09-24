@@ -9,6 +9,7 @@ from pathlib import Path
 from typing import Any
 
 from .graders import grade_case
+from .engineering import collect_engineering
 from .judge import judge_availability, judge_case
 from .models import EvalCase, Grade
 from .production import load_production_contract
@@ -79,6 +80,10 @@ def run_cases(cases: list[EvalCase], *, use_judge: bool = False) -> dict[str, An
         for case in cases
         if "fake_services" in case.trace.metadata
     ]
+    engineering = collect_engineering(cases, contract)
+    engineering_blocking_failures = (
+        [] if engineering["tool_call_validity"]["passed"] else ["tool_call_validity"]
+    )
     return {
         "schema_version": 1,
         "generated_at": datetime.now(timezone.utc).isoformat(),
@@ -118,11 +123,17 @@ def run_cases(cases: list[EvalCase], *, use_judge: bool = False) -> dict[str, An
             "total": len(grades),
             "blocking_failures": blocking_failures,
             "family_threshold_failures": family_threshold_failures,
-            "hard_pass": not blocking_failures and not family_threshold_failures,
+            "engineering_blocking_failures": engineering_blocking_failures,
+            "hard_pass": (
+                not blocking_failures
+                and not family_threshold_failures
+                and not engineering_blocking_failures
+            ),
             "judge_below_threshold": judge_below_threshold,
             "requires_human_review": bool(judge_below_threshold),
         },
         "families": families,
+        "engineering": engineering,
         "grades": [grade.to_dict() for grade in grades],
         "judgments": judgments,
     }
@@ -139,6 +150,7 @@ def render_markdown(report: dict[str, Any]) -> str:
         f"- Cases: {summary['passed']}/{summary['total']} passed",
         f"- Blocking failures: {', '.join(summary['blocking_failures']) or 'none'}",
         f"- Family threshold failures: {', '.join(summary.get('family_threshold_failures', [])) or 'none'}",
+        f"- Engineering blocking failures: {', '.join(summary.get('engineering_blocking_failures', [])) or 'none'}",
         f"- Judge results below threshold: "
         f"{(', '.join(summary.get('judge_below_threshold', [])) or 'none') if report['judge']['status'] == 'completed' else 'n/a'}",
         f"- LLM judge: `{report['judge']['status']}`",
@@ -154,6 +166,38 @@ def render_markdown(report: dict[str, Any]) -> str:
             f"| `{grade['case_id']}` | {grade['family']} | {grade['score']:.0%} | "
             f"{'PASS' if grade['passed'] else 'FAIL'} |"
         )
+    tool_validity = report["engineering"]["tool_call_validity"]
+    prompt_size = report["engineering"]["prompt_size"]
+    ttft = report["engineering"]["time_to_first_token"]
+    model_id = report["engineering"]["model_id"]
+    lines.extend([
+        "",
+        "## Engineering metrics",
+        "",
+        f"- **Tool-call validity:** {'PASS' if tool_validity['passed'] else 'FAIL'} "
+        f"({tool_validity['valid_calls']}/{tool_validity['total_calls']} valid; blocking)",
+        f"- **Time to first token:** {ttft['average_ms'] if ttft['average_ms'] is not None else 'n/a'} ms "
+        f"(`{ttft['status']}`; report-only)",
+        f"- **Returned model IDs:** {', '.join(model_id['values']) or 'n/a'} "
+        f"(`{model_id['status']}`; report-only)",
+        "",
+        "### System prompt sizes",
+        "",
+        "| Prompt | Tokens | Characters | Count method | Exact tokenizer |",
+        "|---|---:|---:|---|---|",
+    ])
+    for prompt in prompt_size["prompts"]:
+        lines.append(
+            f"| `{prompt['prompt']}` | {prompt['tokens']} | {prompt['characters']} | "
+            f"`{prompt['method']}` | {'yes' if prompt['exact_for_configured_tokenizer'] else 'no'} |"
+        )
+    if tool_validity["invalid_calls"]:
+        lines.extend(["", "### Invalid tool calls", ""])
+        for invalid in tool_validity["invalid_calls"]:
+            lines.append(
+                f"- `{invalid['case_id']}` event {invalid['event_index']} "
+                f"`{invalid['tool']}`: {'; '.join(invalid['errors'])}"
+            )
     lines.extend([
         "",
         "## Family thresholds",
