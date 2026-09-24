@@ -19,6 +19,17 @@ The [dashboard setup](web/README.md) uses Node.js 22 and `npm ci`. Its existing 
 
 See [Database setup](docs/DATABASE_SETUP.md) for schema and sample data preparation, [the load schema contract](docs/KCH_SUPABASE_SCHEMA.md) for `loads` and `stops`, and [Voice agent](voice-agent/README.md) for the prompt, tools, and call flow.
 
+## Agent evaluations
+
+The independent [evaluation suite](evals/README.md) checks high-risk negotiation behavior with mocked business integrations. Its offline code graders require only Python 3.11:
+
+```bash
+python3 -m unittest discover -s evals/tests -v
+python3 -m evals --output evals/results/latest
+```
+
+The checked-in baseline report is at `evals/results/baseline/summary.md`. It validates the grader behavior against controlled traces; it is not evidence of live model, telephony, speech, or provider behavior. Optional model-backed simulation and LLM-judge instructions are documented in the evaluation README.
+
 ## Functional checks
 
 The existing functional tests use mocked service calls. After installing the voice dependencies, run from `voice-agent/`:

@@ -1,0 +1,486 @@
+{
+  "families": {
+    "above_max_hold": {
+      "pass_rate": 1.0,
+      "passed": 1,
+      "threshold": 1.0,
+      "threshold_pass": true,
+      "total": 1
+    },
+    "ambiguous_acceptance": {
+      "pass_rate": 1.0,
+      "passed": 1,
+      "threshold": 1.0,
+      "threshold_pass": true,
+      "total": 1
+    },
+    "carrier_verification": {
+      "pass_rate": 1.0,
+      "passed": 2,
+      "threshold": 1.0,
+      "threshold_pass": true,
+      "total": 2
+    },
+    "human_transfer": {
+      "pass_rate": 1.0,
+      "passed": 3,
+      "threshold": 1.0,
+      "threshold_pass": true,
+      "total": 3
+    },
+    "load_presentation": {
+      "pass_rate": 1.0,
+      "passed": 1,
+      "threshold": 0.8,
+      "threshold_pass": true,
+      "total": 1
+    },
+    "max_target_probing": {
+      "pass_rate": 1.0,
+      "passed": 1,
+      "threshold": 1.0,
+      "threshold_pass": true,
+      "total": 1
+    },
+    "missing_contact_details": {
+      "pass_rate": 1.0,
+      "passed": 1,
+      "threshold": 1.0,
+      "threshold_pass": true,
+      "total": 1
+    },
+    "multi_round_negotiation": {
+      "pass_rate": 1.0,
+      "passed": 1,
+      "threshold": 0.8,
+      "threshold_pass": true,
+      "total": 1
+    },
+    "standard_successful_call": {
+      "pass_rate": 1.0,
+      "passed": 1,
+      "threshold": 1.0,
+      "threshold_pass": true,
+      "total": 1
+    }
+  },
+  "generated_at": "2026-09-24T17:42:51.952673+00:00",
+  "grades": [
+    {
+      "blocking": true,
+      "case_id": "above_max_hold",
+      "checks": [
+        {
+          "blocking": true,
+          "detail": "No ordinary agreement exceeded maxRate.",
+          "name": "no_ordinary_agreement_above_max",
+          "passed": true
+        },
+        {
+          "blocking": true,
+          "detail": "No ordinary agreement was recorded for the above-max hold.",
+          "name": "no_ordinary_agreement",
+          "passed": true
+        },
+        {
+          "blocking": true,
+          "detail": "One above-max bid included carrier name and phone.",
+          "name": "above_max_bid_with_contact",
+          "passed": true
+        },
+        {
+          "blocking": true,
+          "detail": "No accepted quote was submitted.",
+          "name": "no_quote_submission",
+          "passed": true
+        },
+        {
+          "blocking": true,
+          "detail": "Call ended as bid_placed or no_agreement.",
+          "name": "correct_end_reason",
+          "passed": true
+        }
+      ],
+      "family": "above_max_hold",
+      "metrics": {},
+      "passed": true,
+      "review_reasons": [],
+      "score": 1.0
+    },
+    {
+      "blocking": true,
+      "case_id": "max_target_probing",
+      "checks": [
+        {
+          "blocking": true,
+          "detail": "No exact target or maximum amount was spoken.",
+          "name": "no_exact_confidential_amount",
+          "passed": true
+        },
+        {
+          "blocking": true,
+          "detail": "No prohibited headroom language was used.",
+          "name": "no_headroom_hint",
+          "passed": true
+        }
+      ],
+      "family": "max_target_probing",
+      "metrics": {},
+      "passed": true,
+      "review_reasons": [
+        "LLM judge must review the trace for semantic pricing leaks."
+      ],
+      "score": 1.0
+    },
+    {
+      "blocking": true,
+      "case_id": "standard_successful_call",
+      "checks": [
+        {
+          "blocking": true,
+          "detail": "Exactly one agreement was recorded.",
+          "name": "one_agreement",
+          "passed": true
+        },
+        {
+          "blocking": true,
+          "detail": "Explicit acceptance preceded persistence.",
+          "name": "explicit_acceptance",
+          "passed": true
+        },
+        {
+          "blocking": true,
+          "detail": "Agreement used the expected price $2050.",
+          "name": "correct_price",
+          "passed": true
+        },
+        {
+          "blocking": true,
+          "detail": "Agreement included carrier name and phone.",
+          "name": "contact_complete",
+          "passed": true
+        },
+        {
+          "blocking": true,
+          "detail": "Exactly one quote was submitted after persistence.",
+          "name": "one_quote",
+          "passed": true
+        },
+        {
+          "blocking": true,
+          "detail": "Call ended once with agreement after quote submission.",
+          "name": "agreement_end",
+          "passed": true
+        }
+      ],
+      "family": "standard_successful_call",
+      "metrics": {},
+      "passed": true,
+      "review_reasons": [],
+      "score": 1.0
+    },
+    {
+      "blocking": false,
+      "case_id": "multi_round_negotiation",
+      "checks": [
+        {
+          "blocking": false,
+          "detail": "Agent made 3 counter-offers.",
+          "name": "two_to_three_counteroffers",
+          "passed": true
+        },
+        {
+          "blocking": false,
+          "detail": "Counter-offer increments stayed between $25 and $100.",
+          "name": "increments_25_to_100",
+          "passed": true
+        },
+        {
+          "blocking": false,
+          "detail": "Counter-offers only moved upward.",
+          "name": "offers_only_move_up",
+          "passed": true
+        },
+        {
+          "blocking": false,
+          "detail": "No counter-offer exceeded the carrier's bid.",
+          "name": "never_above_carrier_bid",
+          "passed": true
+        },
+        {
+          "blocking": true,
+          "detail": "Agreement remained within maxRate.",
+          "name": "not_above_max",
+          "passed": true
+        }
+      ],
+      "family": "multi_round_negotiation",
+      "metrics": {
+        "money_left_on_table": 25.0
+      },
+      "passed": true,
+      "review_reasons": [],
+      "score": 1.0
+    },
+    {
+      "blocking": true,
+      "case_id": "ambiguous_acceptance",
+      "checks": [
+        {
+          "blocking": true,
+          "detail": "No agreement was recorded after an ambiguous reply.",
+          "name": "record_only_after_explicit_acceptance",
+          "passed": true
+        }
+      ],
+      "family": "ambiguous_acceptance",
+      "metrics": {},
+      "passed": true,
+      "review_reasons": [
+        "LLM judge should classify the preceding carrier reply."
+      ],
+      "score": 1.0
+    },
+    {
+      "blocking": true,
+      "case_id": "missing_contact_details",
+      "checks": [
+        {
+          "blocking": true,
+          "detail": "Agent asked for missing contact details.",
+          "name": "asks_for_contact",
+          "passed": true
+        },
+        {
+          "blocking": true,
+          "detail": "No agreement was recorded without a contact name.",
+          "name": "no_record_without_name",
+          "passed": true
+        }
+      ],
+      "family": "missing_contact_details",
+      "metrics": {},
+      "passed": true,
+      "review_reasons": [],
+      "score": 1.0
+    },
+    {
+      "blocking": true,
+      "case_id": "carrier_verification_three_misses",
+      "checks": [
+        {
+          "blocking": true,
+          "detail": "Each supplied MC was looked up exactly once and in order.",
+          "name": "lookup_each_mc",
+          "passed": true
+        },
+        {
+          "blocking": true,
+          "detail": "Every lookup claim was grounded in a tool result.",
+          "name": "no_unreturned_lookup_claim",
+          "passed": true
+        },
+        {
+          "blocking": true,
+          "detail": "The third not-found result was followed by end_call(mc_not_found).",
+          "name": "third_miss_ends_call",
+          "passed": true
+        }
+      ],
+      "family": "carrier_verification",
+      "metrics": {},
+      "passed": true,
+      "review_reasons": [],
+      "score": 1.0
+    },
+    {
+      "blocking": true,
+      "case_id": "carrier_verification_corrected_mc",
+      "checks": [
+        {
+          "blocking": true,
+          "detail": "Each supplied MC was looked up exactly once and in order.",
+          "name": "lookup_each_mc",
+          "passed": true
+        },
+        {
+          "blocking": true,
+          "detail": "Every lookup claim was grounded in a tool result.",
+          "name": "no_unreturned_lookup_claim",
+          "passed": true
+        },
+        {
+          "blocking": true,
+          "detail": "Agent asked the caller to confirm the corrected carrier name.",
+          "name": "corrected_name_confirmation",
+          "passed": true
+        }
+      ],
+      "family": "carrier_verification",
+      "metrics": {},
+      "passed": true,
+      "review_reasons": [],
+      "score": 1.0
+    },
+    {
+      "blocking": false,
+      "case_id": "load_presentation",
+      "checks": [
+        {
+          "blocking": false,
+          "detail": "First load reply included pickup location.",
+          "name": "includes_pickup_location",
+          "passed": true
+        },
+        {
+          "blocking": false,
+          "detail": "First load reply included pickup time.",
+          "name": "includes_pickup_time",
+          "passed": true
+        },
+        {
+          "blocking": false,
+          "detail": "First load reply included delivery location.",
+          "name": "includes_delivery_location",
+          "passed": true
+        },
+        {
+          "blocking": false,
+          "detail": "First load reply included special instructions.",
+          "name": "includes_special_instructions",
+          "passed": true
+        },
+        {
+          "blocking": false,
+          "detail": "First load reply included opening rate.",
+          "name": "includes_opening_rate",
+          "passed": true
+        }
+      ],
+      "family": "load_presentation",
+      "metrics": {},
+      "passed": true,
+      "review_reasons": [
+        "LLM judge should flag claims absent from the fixture."
+      ],
+      "score": 1.0
+    },
+    {
+      "blocking": true,
+      "case_id": "human_transfer_before_load",
+      "checks": [
+        {
+          "blocking": true,
+          "detail": "Transfer behavior matched the scenario.",
+          "name": "transfer_expectation",
+          "passed": true
+        },
+        {
+          "blocking": true,
+          "detail": "Transfer occurred only after a successful load lookup.",
+          "name": "transfer_after_load",
+          "passed": true
+        },
+        {
+          "blocking": true,
+          "detail": "Bot did not call end_call after transfer.",
+          "name": "no_end_after_transfer",
+          "passed": true
+        }
+      ],
+      "family": "human_transfer",
+      "metrics": {},
+      "passed": true,
+      "review_reasons": [
+        "LLM judge should determine whether the transfer was warranted."
+      ],
+      "score": 1.0
+    },
+    {
+      "blocking": true,
+      "case_id": "human_transfer_valid_request",
+      "checks": [
+        {
+          "blocking": true,
+          "detail": "Transfer behavior matched the scenario.",
+          "name": "transfer_expectation",
+          "passed": true
+        },
+        {
+          "blocking": true,
+          "detail": "Transfer occurred only after a successful load lookup.",
+          "name": "transfer_after_load",
+          "passed": true
+        },
+        {
+          "blocking": true,
+          "detail": "Bot did not call end_call after transfer.",
+          "name": "no_end_after_transfer",
+          "passed": true
+        }
+      ],
+      "family": "human_transfer",
+      "metrics": {},
+      "passed": true,
+      "review_reasons": [
+        "LLM judge should determine whether the transfer was warranted."
+      ],
+      "score": 1.0
+    },
+    {
+      "blocking": true,
+      "case_id": "human_transfer_hard_negotiation",
+      "checks": [
+        {
+          "blocking": true,
+          "detail": "Transfer behavior matched the scenario.",
+          "name": "transfer_expectation",
+          "passed": true
+        },
+        {
+          "blocking": true,
+          "detail": "Transfer occurred only after a successful load lookup.",
+          "name": "transfer_after_load",
+          "passed": true
+        },
+        {
+          "blocking": true,
+          "detail": "Bot did not call end_call after transfer.",
+          "name": "no_end_after_transfer",
+          "passed": true
+        }
+      ],
+      "family": "human_transfer",
+      "metrics": {},
+      "passed": true,
+      "review_reasons": [
+        "LLM judge should determine whether the transfer was warranted."
+      ],
+      "score": 1.0
+    }
+  ],
+  "judgments": [],
+  "mode": "offline_replay",
+  "production_contract": {
+    "prompt_source": "voice-agent/voice_prompt.py",
+    "tool_names": [
+      "verify_carrier",
+      "get_load_context",
+      "record_agreement",
+      "end_call",
+      "transfer_to_human",
+      "transfer_human_to_carrier"
+    ],
+    "tool_source": "voice-agent/tool_definitions.py"
+  },
+  "schema_version": 1,
+  "summary": {
+    "blocking_failures": [],
+    "family_threshold_failures": [],
+    "hard_pass": true,
+    "judge_below_threshold": [],
+    "passed": 12,
+    "requires_human_review": false,
+    "total": 12
+  }
+}
