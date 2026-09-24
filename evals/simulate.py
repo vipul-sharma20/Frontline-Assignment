@@ -77,6 +77,13 @@ _INITIAL_PHASE = {
 _AMOUNT = re.compile(r"\$\s*([0-9][0-9,]*(?:\.\d{1,2})?)")
 
 
+def model_availability() -> tuple[bool, str]:
+    """Return model-generation availability without exposing credentials."""
+    if not os.getenv("OPENAI_API_KEY"):
+        return False, "OPENAI_API_KEY is not configured; model generation was skipped"
+    return True, "available"
+
+
 def _load_context(case: EvalCase) -> dict[str, Any]:
     fixture = case.fixture
     return {

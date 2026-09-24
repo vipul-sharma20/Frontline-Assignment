@@ -41,12 +41,16 @@ def run_cases(cases: list[EvalCase], *, use_judge: bool = False) -> dict[str, An
     contract = load_production_contract()
     grades: list[Grade] = []
     judgments: list[dict[str, Any]] = []
+    judge_errors: list[dict[str, str]] = []
     judge_is_available, judge_reason = judge_availability()
     for case in cases:
         grade = grade_case(case)
         grades.append(grade)
         if use_judge and judge_is_available and case.judge_criteria:
-            judgments.append(judge_case(case, grade).to_dict())
+            try:
+                judgments.append(judge_case(case, grade).to_dict())
+            except Exception as exc:
+                judge_errors.append({"case_id": case.id, "error": str(exc)})
 
     family_values: dict[str, list[bool]] = defaultdict(list)
     family_thresholds: dict[str, float] = {}
@@ -97,11 +101,16 @@ def run_cases(cases: list[EvalCase], *, use_judge: bool = False) -> dict[str, An
             "requested": use_judge,
             "available": judge_is_available,
             "status": (
-                "completed" if use_judge and judge_is_available
+                "incomplete_error" if judge_errors
+                else "completed" if use_judge and judge_is_available
                 else "skipped_unavailable" if use_judge
                 else "not_requested"
             ),
-            "reason": judge_reason if not judge_is_available else None,
+            "reason": (
+                "one or more judge calls failed; deterministic grades are unaffected"
+                if judge_errors else judge_reason if not judge_is_available else None
+            ),
+            "errors": judge_errors,
             "threshold": "verdict=pass and score>=4/5",
             "merge_blocking": False,
         },
@@ -141,6 +150,7 @@ def run_cases(cases: list[EvalCase], *, use_judge: bool = False) -> dict[str, An
 
 def render_markdown(report: dict[str, Any]) -> str:
     summary = report["summary"]
+    model_generation = report.get("model_generation", {"status": "not_requested"})
     lines = [
         "# Evaluation Run",
         "",
@@ -154,6 +164,7 @@ def render_markdown(report: dict[str, Any]) -> str:
         f"- Judge results below threshold: "
         f"{(', '.join(summary.get('judge_below_threshold', [])) or 'none') if report['judge']['status'] == 'completed' else 'n/a'}",
         f"- LLM judge: `{report['judge']['status']}`",
+        f"- Model generation: `{model_generation['status']}`",
         f"- Simulation: `{report['isolation']['simulation_type']}`",
         f"- Transactional database writes: {report['isolation']['transactional_database_writes']}",
         f"- Business-service network calls: {report['isolation']['business_network_calls']}",
@@ -214,6 +225,19 @@ def render_markdown(report: dict[str, Any]) -> str:
     if report["judge"]["status"] == "skipped_unavailable":
         lines.extend([
             f"> LLM judge unavailable: {report['judge']['reason']}. Deterministic grades still ran.",
+            "",
+        ])
+    elif report["judge"]["status"] == "incomplete_error":
+        lines.extend([
+            "> LLM judge was incomplete because an optional judge call failed. Deterministic grades still ran.",
+            "",
+        ])
+        for error in report["judge"]["errors"]:
+            lines.append(f"- Judge error for `{error['case_id']}`: {error['error']}")
+        lines.append("")
+    if model_generation["status"] in {"skipped_unavailable", "incomplete_error"}:
+        lines.extend([
+            f"> Model generation unavailable: {model_generation.get('reason')}. Controlled replay traces were graded instead.",
             "",
         ])
     for grade in report["grades"]:

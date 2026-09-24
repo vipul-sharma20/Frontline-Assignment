@@ -6,7 +6,7 @@ import argparse
 from pathlib import Path
 
 from .runner import ROOT, load_cases, run_cases, write_report
-from .simulate import simulate_case
+from .simulate import model_availability, simulate_case
 
 
 def main() -> int:
@@ -35,15 +35,41 @@ def main() -> int:
     if args.repetitions < 1:
         parser.error("--repetitions must be at least 1")
 
-    if args.model:
+    model_is_available, model_reason = model_availability()
+    model_errors = []
+    if args.model and model_is_available:
         generated = []
-        for _ in range(args.repetitions):
-            generated.extend(simulate_case(case) for case in cases)
-        cases = generated
+        for repetition in range(args.repetitions):
+            for case in cases:
+                try:
+                    generated.append(simulate_case(case))
+                except Exception as exc:
+                    model_errors.append(
+                        {"case_id": case.id, "repetition": repetition + 1, "error": str(exc)}
+                    )
+        if generated and not model_errors:
+            cases = generated
 
     report = run_cases(cases, use_judge=args.judge)
-    if args.model:
+    report["model_generation"] = {
+        "requested": args.model,
+        "available": model_is_available,
+        "status": (
+            "completed" if args.model and model_is_available and not model_errors
+            else "incomplete_error" if model_errors
+            else "skipped_unavailable" if args.model
+            else "not_requested"
+        ),
+        "reason": (
+            "one or more optional model calls failed; controlled replay traces were graded"
+            if model_errors else model_reason if not model_is_available else None
+        ),
+        "errors": model_errors,
+    }
+    if args.model and model_is_available and not model_errors:
         report["mode"] = "model_simulation_with_judge" if args.judge else "model_simulation"
+    elif args.model:
+        report["mode"] = "offline_replay_model_unavailable"
     write_report(report, args.output)
     summary = report["summary"]
     print(

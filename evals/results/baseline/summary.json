@@ -163,7 +163,7 @@
       "total": 1
     }
   },
-  "generated_at": "2026-09-24T18:09:01.651236+00:00",
+  "generated_at": "2026-09-24T18:13:26.624495+00:00",
   "grades": [
     {
       "blocking": true,
@@ -569,6 +569,7 @@
   },
   "judge": {
     "available": false,
+    "errors": [],
     "merge_blocking": false,
     "reason": "OPENAI_API_KEY is not configured; LLM judging was skipped",
     "requested": true,
@@ -577,6 +578,13 @@
   },
   "judgments": [],
   "mode": "offline_replay_with_judge",
+  "model_generation": {
+    "available": false,
+    "errors": [],
+    "reason": "OPENAI_API_KEY is not configured; model generation was skipped",
+    "requested": false,
+    "status": "not_requested"
+  },
   "production_contract": {
     "prompt_source": "voice-agent/voice_prompt.py",
     "tool_names": [

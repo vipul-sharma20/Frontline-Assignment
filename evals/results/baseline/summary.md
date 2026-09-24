@@ -1,7 +1,7 @@
 # Evaluation Run
 
 - Mode: `offline_replay_with_judge`
-- Generated: `2026-09-24T18:09:01.651236+00:00`
+- Generated: `2026-09-24T18:13:26.624495+00:00`
 - Result: **PASS**
 - Cases: 12/12 passed
 - Blocking failures: none
@@ -9,6 +9,7 @@
 - Engineering blocking failures: none
 - Judge results below threshold: n/a
 - LLM judge: `skipped_unavailable`
+- Model generation: `not_requested`
 - Simulation: `text_only`
 - Transactional database writes: 0
 - Business-service network calls: 0

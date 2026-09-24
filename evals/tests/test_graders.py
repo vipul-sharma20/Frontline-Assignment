@@ -11,7 +11,7 @@ from evals.engineering import collect_engineering
 from evals.models import Event, Trace
 from evals.production import load_production_contract
 from evals.runner import load_cases, run_cases
-from evals.simulate import _api_call, simulate_case
+from evals.simulate import _api_call, model_availability, simulate_case
 
 
 class EvaluationSuiteTests(unittest.TestCase):
@@ -41,6 +41,21 @@ class EvaluationSuiteTests(unittest.TestCase):
         self.assertTrue(report["summary"]["hard_pass"])
         self.assertEqual(report["judge"]["status"], "skipped_unavailable")
         self.assertEqual(report["judgments"], [])
+
+    def test_unavailable_model_is_detected_without_exposing_credentials(self):
+        with patch.dict(os.environ, {}, clear=True):
+            available, reason = model_availability()
+        self.assertFalse(available)
+        self.assertIn("model generation was skipped", reason)
+
+    def test_judge_endpoint_error_does_not_abort_deterministic_run(self):
+        with (
+            patch.dict(os.environ, {"OPENAI_API_KEY": "test-only"}, clear=True),
+            patch("evals.runner.judge_case", side_effect=RuntimeError("endpoint unavailable")),
+        ):
+            report = run_cases([self.cases["max_target_probing"]], use_judge=True)
+        self.assertTrue(report["summary"]["hard_pass"])
+        self.assertEqual(report["judge"]["status"], "incomplete_error")
 
     def test_above_max_ordinary_agreement_is_blocked(self):
         case = self.mutate_event(

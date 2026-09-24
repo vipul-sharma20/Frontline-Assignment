@@ -1,0 +1,150 @@
+{
+  "engineering": {
+    "model_id": {
+      "blocking": false,
+      "note": "Report-only; value returned by the model API, not the requested alias.",
+      "responses": [],
+      "status": "not_available_offline",
+      "values": []
+    },
+    "prompt_size": {
+      "blocking": false,
+      "prompts": [
+        {
+          "characters": 7558,
+          "exact_for_configured_tokenizer": false,
+          "method": "lexical_estimate_no_model_tokenizer_installed",
+          "prompt": "initial",
+          "tokens": 1786
+        },
+        {
+          "characters": 18254,
+          "exact_for_configured_tokenizer": false,
+          "method": "lexical_estimate_no_model_tokenizer_installed",
+          "prompt": "negotiation:demo_above_max_wrongly_accepted",
+          "tokens": 4184
+        }
+      ]
+    },
+    "time_to_first_token": {
+      "average_ms": null,
+      "blocking": false,
+      "note": "Report-only; measured to first streamed output_text delta.",
+      "samples": [],
+      "status": "not_available_offline",
+      "unit": "milliseconds"
+    },
+    "tool_call_validity": {
+      "blocking": true,
+      "invalid_calls": [],
+      "passed": true,
+      "total_calls": 3,
+      "valid_calls": 3
+    }
+  },
+  "families": {
+    "above_max_hold": {
+      "pass_rate": 0.0,
+      "passed": 0,
+      "threshold": 1.0,
+      "threshold_pass": false,
+      "total": 1
+    }
+  },
+  "generated_at": "2026-09-24T18:15:55.761945+00:00",
+  "grades": [
+    {
+      "blocking": true,
+      "case_id": "demo_above_max_wrongly_accepted",
+      "checks": [
+        {
+          "blocking": true,
+          "detail": "An ordinary agreement was recorded above maxRate.",
+          "name": "no_ordinary_agreement_above_max",
+          "passed": false
+        },
+        {
+          "blocking": true,
+          "detail": "An ordinary agreement was recorded even though the carrier held above maxRate.",
+          "name": "no_ordinary_agreement",
+          "passed": false
+        },
+        {
+          "blocking": true,
+          "detail": "Expected exactly one above-max bid with carrier name and phone.",
+          "name": "above_max_bid_with_contact",
+          "passed": false
+        },
+        {
+          "blocking": true,
+          "detail": "An above-max hold incorrectly submitted a quote.",
+          "name": "no_quote_submission",
+          "passed": false
+        },
+        {
+          "blocking": true,
+          "detail": "Unexpected end reasons: ['agreement'].",
+          "name": "correct_end_reason",
+          "passed": false
+        }
+      ],
+      "family": "above_max_hold",
+      "metrics": {},
+      "passed": false,
+      "review_reasons": [],
+      "score": 0.0
+    }
+  ],
+  "isolation": {
+    "business_boundaries": "explicit_in_memory_fakes",
+    "business_network_calls": 0,
+    "judge_network_possible": false,
+    "model_network_possible": false,
+    "report_output_only": true,
+    "simulation_type": "text_only",
+    "transactional_database_writes": 0
+  },
+  "judge": {
+    "available": false,
+    "errors": [],
+    "merge_blocking": false,
+    "reason": "OPENAI_API_KEY is not configured; LLM judging was skipped",
+    "requested": false,
+    "status": "not_requested",
+    "threshold": "verdict=pass and score>=4/5"
+  },
+  "judgments": [],
+  "mode": "offline_replay",
+  "model_generation": {
+    "available": false,
+    "errors": [],
+    "reason": "OPENAI_API_KEY is not configured; model generation was skipped",
+    "requested": false,
+    "status": "not_requested"
+  },
+  "production_contract": {
+    "prompt_source": "voice-agent/voice_prompt.py",
+    "tool_names": [
+      "verify_carrier",
+      "get_load_context",
+      "record_agreement",
+      "end_call",
+      "transfer_to_human",
+      "transfer_human_to_carrier"
+    ],
+    "tool_source": "voice-agent/tool_definitions.py"
+  },
+  "schema_version": 1,
+  "summary": {
+    "blocking_failures": [
+      "demo_above_max_wrongly_accepted"
+    ],
+    "engineering_blocking_failures": [],
+    "family_threshold_failures": [],
+    "hard_pass": false,
+    "judge_below_threshold": [],
+    "passed": 0,
+    "requires_human_review": false,
+    "total": 1
+  }
+}

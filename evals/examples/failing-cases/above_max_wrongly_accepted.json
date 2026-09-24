@@ -1,0 +1,21 @@
+[
+  {
+    "id": "demo_above_max_wrongly_accepted",
+    "family": "above_max_hold",
+    "description": "Intentional failure: carrier holds above max but the agent records an ordinary agreement and submits a quote.",
+    "grader": "above_max",
+    "fixture": {"max_rate": 2200, "carrier_offer": 2350},
+    "trace": {
+      "case_id": "demo_above_max_wrongly_accepted",
+      "events": [
+        {"kind": "message", "role": "user", "content": "I cannot go below $2,350. This is Jordan at 312-555-0144."},
+        {"kind": "message", "role": "assistant", "content": "Alright, we have a deal at $2,350."},
+        {"kind": "tool_call", "name": "record_agreement", "arguments": {"agreed_price": 2350, "above_max": false, "carrier_contact_name": "Jordan", "carrier_contact_phone": "312-555-0144"}},
+        {"kind": "tool_result", "name": "record_agreement", "result": {"status": "success", "negotiation_id": "bad-negotiation"}},
+        {"kind": "tool_call", "name": "submit_quote", "arguments": {"agreed_price": 2350}},
+        {"kind": "tool_result", "name": "submit_quote", "result": {"status": "success"}},
+        {"kind": "tool_call", "name": "end_call", "arguments": {"reason": "agreement"}}
+      ]
+    }
+  }
+]

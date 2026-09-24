@@ -44,6 +44,8 @@ The judge uses the OpenAI Responses API with strict JSON Schema output and `stor
 
 LLM judging is optional. When `--judge` is requested without `OPENAI_API_KEY`, the runner records `skipped_unavailable`, runs every deterministic grader, and exits according to the deterministic result. It never treats a missing judge as a failed agent evaluation. The checked-in baseline demonstrates this state because no judge credential was available in the assessment environment.
 
+If a judge credential exists but the optional judge request fails, the report records `incomplete_error` for the affected case and still completes deterministic grading. Judge infrastructure errors are not agent-behavior failures.
+
 Do not use production business-service credentials for evaluation. The judge flag needs only the evaluation model credential; the default offline suite needs no credentials at all.
 
 ## Model-backed simulations
@@ -58,6 +60,8 @@ OPENAI_API_KEY=... EVAL_AGENT_MODEL=gpt-4.1 \
 Add `--judge` to grade configured semantic criteria after the code graders run. Agent generation and judging are separate calls, and can use different models through `EVAL_AGENT_MODEL` and `EVAL_JUDGE_MODEL`. The simulator synthesizes quote-submission ledger entries when a normal agreement succeeds, matching the production handler's downstream side effect.
 
 Model generation itself requires `OPENAI_API_KEY`; only offline replay can run when no model endpoint is available. This distinction is reported as the run `mode`.
+
+Requesting `--model` without a credential does not abort the run. It records `skipped_unavailable`, grades the controlled replay traces, and produces the normal report. If a model endpoint fails partway through, the report records `incomplete_error` and falls back to controlled replay so partial generated traces are not mixed with baseline traces. This keeps infrastructure availability separate from agent correctness.
 
 ## Isolation and fakes
 
