@@ -1,0 +1,85 @@
+{
+  "demo_above_max_wrongly_accepted": {
+    "case_id": "demo_above_max_wrongly_accepted",
+    "events": [
+      {
+        "arguments": {},
+        "content": "I cannot go below $2,350. This is Jordan at 312-555-0144.",
+        "kind": "message",
+        "metadata": {},
+        "name": null,
+        "result": {},
+        "role": "user"
+      },
+      {
+        "arguments": {},
+        "content": "Alright, we have a deal at $2,350.",
+        "kind": "message",
+        "metadata": {},
+        "name": null,
+        "result": {},
+        "role": "assistant"
+      },
+      {
+        "arguments": {
+          "above_max": false,
+          "agreed_price": 2350,
+          "carrier_contact_name": "Jordan",
+          "carrier_contact_phone": "312-555-0144"
+        },
+        "content": null,
+        "kind": "tool_call",
+        "metadata": {},
+        "name": "record_agreement",
+        "result": {},
+        "role": null
+      },
+      {
+        "arguments": {},
+        "content": null,
+        "kind": "tool_result",
+        "metadata": {},
+        "name": "record_agreement",
+        "result": {
+          "negotiation_id": "bad-negotiation",
+          "status": "success"
+        },
+        "role": null
+      },
+      {
+        "arguments": {
+          "agreed_price": 2350
+        },
+        "content": null,
+        "kind": "tool_call",
+        "metadata": {},
+        "name": "submit_quote",
+        "result": {},
+        "role": null
+      },
+      {
+        "arguments": {},
+        "content": null,
+        "kind": "tool_result",
+        "metadata": {},
+        "name": "submit_quote",
+        "result": {
+          "status": "success"
+        },
+        "role": null
+      },
+      {
+        "arguments": {
+          "reason": "agreement"
+        },
+        "content": null,
+        "kind": "tool_call",
+        "metadata": {},
+        "name": "end_call",
+        "result": {},
+        "role": null
+      }
+    ],
+    "metadata": {}
+  }
+}

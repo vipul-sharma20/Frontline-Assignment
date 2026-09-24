@@ -145,6 +145,7 @@ def run_cases(cases: list[EvalCase], *, use_judge: bool = False) -> dict[str, An
         "engineering": engineering,
         "grades": [grade.to_dict() for grade in grades],
         "judgments": judgments,
+        "traces": {case.id: case.trace.to_dict() for case in cases},
     }
 
 
@@ -256,7 +257,12 @@ def render_markdown(report: dict[str, Any]) -> str:
 
 def write_report(report: dict[str, Any], output_dir: Path) -> None:
     output_dir.mkdir(parents=True, exist_ok=True)
+    traces = report.get("traces", {})
+    (output_dir / "traces.json").write_text(
+        json.dumps(traces, indent=2, sort_keys=True) + "\n", encoding="utf-8"
+    )
+    summary = {key: value for key, value in report.items() if key != "traces"}
     (output_dir / "summary.json").write_text(
-        json.dumps(report, indent=2, sort_keys=True) + "\n", encoding="utf-8"
+        json.dumps(summary, indent=2, sort_keys=True) + "\n", encoding="utf-8"
     )
     (output_dir / "summary.md").write_text(render_markdown(report) + "\n", encoding="utf-8")

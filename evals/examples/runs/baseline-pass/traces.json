@@ -1,0 +1,718 @@
+{
+  "above_max_hold": {
+    "case_id": "above_max_hold",
+    "events": [
+      {
+        "arguments": {},
+        "content": "I cannot go below $2,350. Save it under Jordan at 312-555-0144.",
+        "kind": "message",
+        "metadata": {},
+        "name": null,
+        "result": {},
+        "role": "user"
+      },
+      {
+        "arguments": {
+          "above_max": true,
+          "agreed_price": 2350,
+          "carrier_contact_name": "Jordan",
+          "carrier_contact_phone": "312-555-0144"
+        },
+        "content": null,
+        "kind": "tool_call",
+        "metadata": {},
+        "name": "record_agreement",
+        "result": {},
+        "role": null
+      },
+      {
+        "arguments": {},
+        "content": null,
+        "kind": "tool_result",
+        "metadata": {},
+        "name": "record_agreement",
+        "result": {
+          "negotiation_id": "bid-1",
+          "status": "success"
+        },
+        "role": null
+      },
+      {
+        "arguments": {},
+        "content": "I saved your offer and the team can follow up if anything changes.",
+        "kind": "message",
+        "metadata": {},
+        "name": null,
+        "result": {},
+        "role": "assistant"
+      },
+      {
+        "arguments": {
+          "reason": "bid_placed"
+        },
+        "content": null,
+        "kind": "tool_call",
+        "metadata": {},
+        "name": "end_call",
+        "result": {},
+        "role": null
+      }
+    ],
+    "metadata": {}
+  },
+  "ambiguous_acceptance": {
+    "case_id": "ambiguous_acceptance",
+    "events": [
+      {
+        "arguments": {},
+        "content": "Could you do $2,000?",
+        "kind": "message",
+        "metadata": {},
+        "name": null,
+        "result": {},
+        "role": "assistant"
+      },
+      {
+        "arguments": {},
+        "content": "Probably. Two thousand.",
+        "kind": "message",
+        "metadata": {},
+        "name": null,
+        "result": {},
+        "role": "user"
+      },
+      {
+        "arguments": {},
+        "content": "Are you confirming the load at $2,000?",
+        "kind": "message",
+        "metadata": {},
+        "name": null,
+        "result": {},
+        "role": "assistant"
+      },
+      {
+        "arguments": {},
+        "content": "Let me check first.",
+        "kind": "message",
+        "metadata": {},
+        "name": null,
+        "result": {},
+        "role": "user"
+      }
+    ],
+    "metadata": {}
+  },
+  "carrier_verification_corrected_mc": {
+    "case_id": "carrier_verification_corrected_mc",
+    "events": [
+      {
+        "arguments": {},
+        "content": "MC 444444.",
+        "kind": "message",
+        "metadata": {},
+        "name": null,
+        "result": {},
+        "role": "user"
+      },
+      {
+        "arguments": {
+          "mc_number": "444444"
+        },
+        "content": null,
+        "kind": "tool_call",
+        "metadata": {},
+        "name": "verify_carrier",
+        "result": {},
+        "role": null
+      },
+      {
+        "arguments": {},
+        "content": null,
+        "kind": "tool_result",
+        "metadata": {},
+        "name": "verify_carrier",
+        "result": {
+          "carrier_name": "Alpha Transport",
+          "status": "success"
+        },
+        "role": null
+      },
+      {
+        "arguments": {},
+        "content": "Is this Alpha Transport?",
+        "kind": "message",
+        "metadata": {},
+        "name": null,
+        "result": {},
+        "role": "assistant"
+      },
+      {
+        "arguments": {},
+        "content": "No, I read it wrong. Try 555555.",
+        "kind": "message",
+        "metadata": {},
+        "name": null,
+        "result": {},
+        "role": "user"
+      },
+      {
+        "arguments": {
+          "mc_number": "555555"
+        },
+        "content": null,
+        "kind": "tool_call",
+        "metadata": {},
+        "name": "verify_carrier",
+        "result": {},
+        "role": null
+      },
+      {
+        "arguments": {},
+        "content": null,
+        "kind": "tool_result",
+        "metadata": {},
+        "name": "verify_carrier",
+        "result": {
+          "carrier_name": "Beta Freight",
+          "status": "success"
+        },
+        "role": null
+      },
+      {
+        "arguments": {},
+        "content": "Is this Beta Freight?",
+        "kind": "message",
+        "metadata": {},
+        "name": null,
+        "result": {},
+        "role": "assistant"
+      }
+    ],
+    "metadata": {}
+  },
+  "carrier_verification_three_misses": {
+    "case_id": "carrier_verification_three_misses",
+    "events": [
+      {
+        "arguments": {},
+        "content": "My MC is 111111.",
+        "kind": "message",
+        "metadata": {},
+        "name": null,
+        "result": {},
+        "role": "user"
+      },
+      {
+        "arguments": {
+          "mc_number": "111111"
+        },
+        "content": null,
+        "kind": "tool_call",
+        "metadata": {},
+        "name": "verify_carrier",
+        "result": {},
+        "role": null
+      },
+      {
+        "arguments": {},
+        "content": null,
+        "kind": "tool_result",
+        "metadata": {},
+        "name": "verify_carrier",
+        "result": {
+          "status": "not_found"
+        },
+        "role": null
+      },
+      {
+        "arguments": {},
+        "content": "I couldn't find that one. Please check it.",
+        "kind": "message",
+        "metadata": {},
+        "name": null,
+        "result": {},
+        "role": "assistant"
+      },
+      {
+        "arguments": {},
+        "content": "Try 222222.",
+        "kind": "message",
+        "metadata": {},
+        "name": null,
+        "result": {},
+        "role": "user"
+      },
+      {
+        "arguments": {
+          "mc_number": "222222"
+        },
+        "content": null,
+        "kind": "tool_call",
+        "metadata": {},
+        "name": "verify_carrier",
+        "result": {},
+        "role": null
+      },
+      {
+        "arguments": {},
+        "content": null,
+        "kind": "tool_result",
+        "metadata": {},
+        "name": "verify_carrier",
+        "result": {
+          "status": "not_found"
+        },
+        "role": null
+      },
+      {
+        "arguments": {},
+        "content": "That one didn't come back either. One more check?",
+        "kind": "message",
+        "metadata": {},
+        "name": null,
+        "result": {},
+        "role": "assistant"
+      },
+      {
+        "arguments": {},
+        "content": "It's 333333.",
+        "kind": "message",
+        "metadata": {},
+        "name": null,
+        "result": {},
+        "role": "user"
+      },
+      {
+        "arguments": {
+          "mc_number": "333333"
+        },
+        "content": null,
+        "kind": "tool_call",
+        "metadata": {},
+        "name": "verify_carrier",
+        "result": {},
+        "role": null
+      },
+      {
+        "arguments": {},
+        "content": null,
+        "kind": "tool_result",
+        "metadata": {},
+        "name": "verify_carrier",
+        "result": {
+          "status": "not_found"
+        },
+        "role": null
+      },
+      {
+        "arguments": {},
+        "content": "Sorry, I can't verify that MC. Thanks for calling.",
+        "kind": "message",
+        "metadata": {},
+        "name": null,
+        "result": {},
+        "role": "assistant"
+      },
+      {
+        "arguments": {
+          "reason": "mc_not_found"
+        },
+        "content": null,
+        "kind": "tool_call",
+        "metadata": {},
+        "name": "end_call",
+        "result": {},
+        "role": null
+      }
+    ],
+    "metadata": {}
+  },
+  "human_transfer_before_load": {
+    "case_id": "human_transfer_before_load",
+    "events": [
+      {
+        "arguments": {},
+        "content": "Put a human on.",
+        "kind": "message",
+        "metadata": {},
+        "name": null,
+        "result": {},
+        "role": "user"
+      },
+      {
+        "arguments": {},
+        "content": "I can help with that once I have the load reference. What's the reference number?",
+        "kind": "message",
+        "metadata": {},
+        "name": null,
+        "result": {},
+        "role": "assistant"
+      }
+    ],
+    "metadata": {}
+  },
+  "human_transfer_hard_negotiation": {
+    "case_id": "human_transfer_hard_negotiation",
+    "events": [
+      {
+        "arguments": {},
+        "content": null,
+        "kind": "tool_result",
+        "metadata": {},
+        "name": "get_load_context",
+        "result": {
+          "status": "success"
+        },
+        "role": null
+      },
+      {
+        "arguments": {},
+        "content": "Your rate is too low. I need $2,100 and I'm not moving much.",
+        "kind": "message",
+        "metadata": {},
+        "name": null,
+        "result": {},
+        "role": "user"
+      },
+      {
+        "arguments": {},
+        "content": "I hear you. I can come up to $1,950 if we can get it covered today.",
+        "kind": "message",
+        "metadata": {},
+        "name": null,
+        "result": {},
+        "role": "assistant"
+      }
+    ],
+    "metadata": {}
+  },
+  "human_transfer_valid_request": {
+    "case_id": "human_transfer_valid_request",
+    "events": [
+      {
+        "arguments": {},
+        "content": null,
+        "kind": "tool_result",
+        "metadata": {},
+        "name": "get_load_context",
+        "result": {
+          "status": "success"
+        },
+        "role": null
+      },
+      {
+        "arguments": {},
+        "content": "I want to speak to a human broker.",
+        "kind": "message",
+        "metadata": {},
+        "name": null,
+        "result": {},
+        "role": "user"
+      },
+      {
+        "arguments": {},
+        "content": "I'll place you on a brief hold while I connect you.",
+        "kind": "message",
+        "metadata": {},
+        "name": null,
+        "result": {},
+        "role": "assistant"
+      },
+      {
+        "arguments": {
+          "load_number": "DEMO-1001",
+          "reason": "carrier explicitly requested human"
+        },
+        "content": null,
+        "kind": "tool_call",
+        "metadata": {},
+        "name": "transfer_to_human",
+        "result": {},
+        "role": null
+      }
+    ],
+    "metadata": {}
+  },
+  "load_presentation": {
+    "case_id": "load_presentation",
+    "events": [
+      {
+        "arguments": {
+          "load_id": "DEMO-1001"
+        },
+        "content": null,
+        "kind": "tool_call",
+        "metadata": {},
+        "name": "get_load_context",
+        "result": {},
+        "role": null
+      },
+      {
+        "arguments": {},
+        "content": null,
+        "kind": "tool_result",
+        "metadata": {},
+        "name": "get_load_context",
+        "result": {
+          "status": "success"
+        },
+        "role": null
+      },
+      {
+        "arguments": {},
+        "content": "I've got DEMO-1001. Pickup is Chicago, Illinois on September 25th at 8 AM, delivering in Indianapolis, Indiana. Heads up: Tracker required. This lane is going for $1800. What rate do you have in mind?",
+        "kind": "message",
+        "metadata": {},
+        "name": null,
+        "result": {},
+        "role": "assistant"
+      }
+    ],
+    "metadata": {}
+  },
+  "max_target_probing": {
+    "case_id": "max_target_probing",
+    "events": [
+      {
+        "arguments": {},
+        "content": "What's your max and what's the real budget?",
+        "kind": "message",
+        "metadata": {},
+        "name": null,
+        "result": {},
+        "role": "user"
+      },
+      {
+        "arguments": {},
+        "content": "I can't share internal pricing, but I can offer nineteen hundred for this lane.",
+        "kind": "message",
+        "metadata": {},
+        "name": null,
+        "result": {},
+        "role": "assistant"
+      }
+    ],
+    "metadata": {}
+  },
+  "missing_contact_details": {
+    "case_id": "missing_contact_details",
+    "events": [
+      {
+        "arguments": {},
+        "content": "Yes, $2,000 works.",
+        "kind": "message",
+        "metadata": {},
+        "name": null,
+        "result": {},
+        "role": "user"
+      },
+      {
+        "arguments": {},
+        "content": "Great. What's the best contact name and phone number?",
+        "kind": "message",
+        "metadata": {},
+        "name": null,
+        "result": {},
+        "role": "assistant"
+      },
+      {
+        "arguments": {},
+        "content": "I'll send that later.",
+        "kind": "message",
+        "metadata": {},
+        "name": null,
+        "result": {},
+        "role": "user"
+      },
+      {
+        "arguments": {},
+        "content": "I need a contact name before I can finish the agreement. What name should I use?",
+        "kind": "message",
+        "metadata": {},
+        "name": null,
+        "result": {},
+        "role": "assistant"
+      }
+    ],
+    "metadata": {}
+  },
+  "multi_round_negotiation": {
+    "case_id": "multi_round_negotiation",
+    "events": [
+      {
+        "arguments": {},
+        "content": "I need $2,100.",
+        "kind": "message",
+        "metadata": {},
+        "name": null,
+        "result": {},
+        "role": "user"
+      },
+      {
+        "arguments": {},
+        "content": "I can come up to $1,900.",
+        "kind": "message",
+        "metadata": {},
+        "name": null,
+        "result": {},
+        "role": "assistant"
+      },
+      {
+        "arguments": {},
+        "content": "I could do $2,075.",
+        "kind": "message",
+        "metadata": {},
+        "name": null,
+        "result": {},
+        "role": "user"
+      },
+      {
+        "arguments": {},
+        "content": "I can get to $1,950.",
+        "kind": "message",
+        "metadata": {},
+        "name": null,
+        "result": {},
+        "role": "assistant"
+      },
+      {
+        "arguments": {},
+        "content": "$2,025 is my floor.",
+        "kind": "message",
+        "metadata": {},
+        "name": null,
+        "result": {},
+        "role": "user"
+      },
+      {
+        "arguments": {},
+        "content": "Alright, I can meet you at $2,025.",
+        "kind": "message",
+        "metadata": {},
+        "name": null,
+        "result": {},
+        "role": "assistant"
+      },
+      {
+        "arguments": {},
+        "content": "Yes, book it.",
+        "kind": "message",
+        "metadata": {},
+        "name": null,
+        "result": {},
+        "role": "user"
+      },
+      {
+        "arguments": {
+          "agreed_price": 2025,
+          "carrier_contact_name": "Casey",
+          "carrier_contact_phone": "312-555-0110"
+        },
+        "content": null,
+        "kind": "tool_call",
+        "metadata": {},
+        "name": "record_agreement",
+        "result": {},
+        "role": null
+      }
+    ],
+    "metadata": {
+      "agent_counter_offers": [
+        1900,
+        1950,
+        2025
+      ]
+    }
+  },
+  "standard_successful_call": {
+    "case_id": "standard_successful_call",
+    "events": [
+      {
+        "arguments": {},
+        "content": "So we're confirmed at $2,050?",
+        "kind": "message",
+        "metadata": {},
+        "name": null,
+        "result": {},
+        "role": "assistant"
+      },
+      {
+        "arguments": {},
+        "content": "Yes, that's a deal. This is Sam and my number is 312-555-0188.",
+        "kind": "message",
+        "metadata": {},
+        "name": null,
+        "result": {},
+        "role": "user"
+      },
+      {
+        "arguments": {
+          "agreed_price": 2050,
+          "carrier_contact_name": "Sam",
+          "carrier_contact_phone": "312-555-0188"
+        },
+        "content": null,
+        "kind": "tool_call",
+        "metadata": {},
+        "name": "record_agreement",
+        "result": {},
+        "role": null
+      },
+      {
+        "arguments": {},
+        "content": null,
+        "kind": "tool_result",
+        "metadata": {},
+        "name": "record_agreement",
+        "result": {
+          "negotiation_id": "neg-1",
+          "status": "success"
+        },
+        "role": null
+      },
+      {
+        "arguments": {
+          "agreed_price": 2050
+        },
+        "content": null,
+        "kind": "tool_call",
+        "metadata": {},
+        "name": "submit_quote",
+        "result": {},
+        "role": null
+      },
+      {
+        "arguments": {},
+        "content": null,
+        "kind": "tool_result",
+        "metadata": {},
+        "name": "submit_quote",
+        "result": {
+          "status": "success"
+        },
+        "role": null
+      },
+      {
+        "arguments": {},
+        "content": "Perfect, I'll get the rate confirmation sent over.",
+        "kind": "message",
+        "metadata": {},
+        "name": null,
+        "result": {},
+        "role": "assistant"
+      },
+      {
+        "arguments": {
+          "reason": "agreement"
+        },
+        "content": null,
+        "kind": "tool_call",
+        "metadata": {},
+        "name": "end_call",
+        "result": {},
+        "role": null
+      }
+    ],
+    "metadata": {}
+  }
+}

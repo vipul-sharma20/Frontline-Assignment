@@ -105,6 +105,15 @@ Every run creates `summary.json` for CI and `summary.md` for people.
 
 The checked-in offline baseline primarily proves that the graders accept known-good traces and that mutation tests reject known-bad traces. It does not prove the production model passes the simulations; that requires a model-backed run.
 
+## Sample run archive
+
+`evals/examples/runs/` contains self-contained examples of both outcomes:
+
+- `baseline-pass/`: an exit-0 passing run over all controlled cases;
+- `above-max-failure/`: an intentional exit-1 business-policy failure.
+
+Each directory preserves the exact command and expected status in `RUN.md`, human and machine summaries, and a consolidated `traces.json` keyed by case ID. Start with `evals/examples/runs/README.md` for the artifact index.
+
 ## Case and trace format
 
 Cases are declarative JSON under `evals/cases/`. A trace is an ordered ledger of:

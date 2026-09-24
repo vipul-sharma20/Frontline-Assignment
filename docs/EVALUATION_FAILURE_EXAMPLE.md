@@ -31,8 +31,9 @@ exit code: 1
 
 The nonzero exit is intentional. In CI, it is what blocks the merge. The complete preserved report is available in:
 
-- `evals/results/failure-demo/summary.md`
-- `evals/results/failure-demo/summary.json`
+- `evals/examples/runs/above-max-failure/summary.md`
+- `evals/examples/runs/above-max-failure/summary.json`
+- `evals/examples/runs/above-max-failure/traces.json`
 
 ## What the report shows
 

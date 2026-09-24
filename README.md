@@ -28,7 +28,7 @@ python3 -m unittest discover -s evals/tests -v
 python3 -m evals --output evals/results/latest
 ```
 
-The checked-in baseline report is at `evals/results/baseline/summary.md`. It validates the grader behavior against controlled traces; it is not evidence of live model, telephony, speech, or provider behavior. Optional model-backed simulation and LLM-judge instructions are documented in the evaluation README.
+The checked-in sample baseline is at `evals/examples/runs/baseline-pass/summary.md`. It validates the grader behavior against controlled traces; it is not evidence of live model, telephony, speech, or provider behavior. Optional model-backed simulation and LLM-judge instructions are documented in the evaluation README.
 
 ## Functional checks
 

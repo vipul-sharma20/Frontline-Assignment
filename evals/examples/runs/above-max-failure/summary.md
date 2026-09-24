@@ -1,7 +1,7 @@
 # Evaluation Run
 
 - Mode: `offline_replay`
-- Generated: `2026-09-24T18:15:55.761945+00:00`
+- Generated: `2026-09-24T18:26:17.645240+00:00`
 - Result: **FAIL**
 - Cases: 0/1 passed
 - Blocking failures: demo_above_max_wrongly_accepted

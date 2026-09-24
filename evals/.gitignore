@@ -1,9 +1,3 @@
 __pycache__/
 *.py[cod]
-results/*
-!results/baseline/
-!results/baseline/summary.json
-!results/baseline/summary.md
-!results/failure-demo/
-!results/failure-demo/summary.json
-!results/failure-demo/summary.md
+results/
