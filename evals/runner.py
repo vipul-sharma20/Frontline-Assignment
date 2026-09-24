@@ -9,7 +9,7 @@ from pathlib import Path
 from typing import Any
 
 from .graders import grade_case
-from .judge import judge_case
+from .judge import judge_availability, judge_case
 from .models import EvalCase, Grade
 from .production import load_production_contract
 
@@ -40,10 +40,11 @@ def run_cases(cases: list[EvalCase], *, use_judge: bool = False) -> dict[str, An
     contract = load_production_contract()
     grades: list[Grade] = []
     judgments: list[dict[str, Any]] = []
+    judge_is_available, judge_reason = judge_availability()
     for case in cases:
         grade = grade_case(case)
         grades.append(grade)
-        if use_judge and case.judge_criteria:
+        if use_judge and judge_is_available and case.judge_criteria:
             judgments.append(judge_case(case, grade).to_dict())
 
     family_values: dict[str, list[bool]] = defaultdict(list)
@@ -73,6 +74,11 @@ def run_cases(cases: list[EvalCase], *, use_judge: bool = False) -> dict[str, An
     judge_below_threshold = [
         judgment["case_id"] for judgment in judgments if not judgment["threshold_pass"]
     ]
+    fake_reports = [
+        case.trace.metadata["fake_services"]
+        for case in cases
+        if "fake_services" in case.trace.metadata
+    ]
     return {
         "schema_version": 1,
         "generated_at": datetime.now(timezone.utc).isoformat(),
@@ -81,6 +87,31 @@ def run_cases(cases: list[EvalCase], *, use_judge: bool = False) -> dict[str, An
             "tool_names": [tool["name"] for tool in contract.tools],
             "prompt_source": "voice-agent/voice_prompt.py",
             "tool_source": "voice-agent/tool_definitions.py",
+        },
+        "judge": {
+            "requested": use_judge,
+            "available": judge_is_available,
+            "status": (
+                "completed" if use_judge and judge_is_available
+                else "skipped_unavailable" if use_judge
+                else "not_requested"
+            ),
+            "reason": judge_reason if not judge_is_available else None,
+            "threshold": "verdict=pass and score>=4/5",
+            "merge_blocking": False,
+        },
+        "isolation": {
+            "simulation_type": "text_only",
+            "transactional_database_writes": sum(
+                int(item.get("transactional_database_writes", 0)) for item in fake_reports
+            ),
+            "business_network_calls": sum(
+                int(item.get("business_network_calls", 0)) for item in fake_reports
+            ),
+            "business_boundaries": "explicit_in_memory_fakes",
+            "report_output_only": True,
+            "model_network_possible": any(case.trace.metadata.get("simulation") for case in cases),
+            "judge_network_possible": use_judge and judge_is_available,
         },
         "summary": {
             "passed": sum(grade.passed for grade in grades),
@@ -108,7 +139,12 @@ def render_markdown(report: dict[str, Any]) -> str:
         f"- Cases: {summary['passed']}/{summary['total']} passed",
         f"- Blocking failures: {', '.join(summary['blocking_failures']) or 'none'}",
         f"- Family threshold failures: {', '.join(summary.get('family_threshold_failures', [])) or 'none'}",
-        f"- Judge results below threshold: {', '.join(summary.get('judge_below_threshold', [])) or 'none'}",
+        f"- Judge results below threshold: "
+        f"{(', '.join(summary.get('judge_below_threshold', [])) or 'none') if report['judge']['status'] == 'completed' else 'n/a'}",
+        f"- LLM judge: `{report['judge']['status']}`",
+        f"- Simulation: `{report['isolation']['simulation_type']}`",
+        f"- Transactional database writes: {report['isolation']['transactional_database_writes']}",
+        f"- Business-service network calls: {report['isolation']['business_network_calls']}",
         "",
         "| Case | Family | Score | Result |",
         "|---|---|---:|---|",
@@ -118,7 +154,24 @@ def render_markdown(report: dict[str, Any]) -> str:
             f"| `{grade['case_id']}` | {grade['family']} | {grade['score']:.0%} | "
             f"{'PASS' if grade['passed'] else 'FAIL'} |"
         )
+    lines.extend([
+        "",
+        "## Family thresholds",
+        "",
+        "| Family | Passed | Pass rate | Required | Result |",
+        "|---|---:|---:|---:|---|",
+    ])
+    for name, family in report["families"].items():
+        lines.append(
+            f"| {name} | {family['passed']}/{family['total']} | {family['pass_rate']:.0%} | "
+            f"{family['threshold']:.0%} | {'PASS' if family['threshold_pass'] else 'FAIL'} |"
+        )
     lines.extend(["", "## Diagnostics", ""])
+    if report["judge"]["status"] == "skipped_unavailable":
+        lines.extend([
+            f"> LLM judge unavailable: {report['judge']['reason']}. Deterministic grades still ran.",
+            "",
+        ])
     for grade in report["grades"]:
         lines.append(f"### `{grade['case_id']}`")
         lines.append("")

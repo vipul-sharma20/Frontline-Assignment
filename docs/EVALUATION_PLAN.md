@@ -187,6 +187,10 @@ A scenario can never pass when `hard_pass` is false, regardless of its quality s
 
 ## Execution modes
 
+All implemented simulations are text-only. They operate on caller text, assistant text, tool calls, mocked tool results, and ordered trace events. Audio, STT, TTS, telephony, recording, and real transfer connectivity are outside this suite.
+
+Simulation tool calls are handled by explicit in-memory fakes for carrier lookup, phone-first lookup, load lookup, agreement persistence, KCH quote submission, Cognito authentication, transfer scheduling, and call ending. Transfer intent is recorded but never executed. Simulated agreements and quotes exist only in evaluation traces and reports; they are never written to the application's transactional database. Optional agent-model and judge-model calls are the only permitted network activity.
+
 The engine should ultimately support three workflows:
 
 ```bash
@@ -200,7 +204,7 @@ python3 -m evals --model --judge --repetitions 3 --output evals/results/model
 python3 -m evals --case ambiguous_acceptance
 ```
 
-Offline mode should require no provider or production credentials. Model and judge modes may use dedicated evaluation model credentials, but must continue to mock Daily, Supabase, Highway, KCH, Slack, storage, and transfer operations. The engine should also support judging an existing saved trace without rerunning the agent.
+Offline mode requires no provider or production credentials. Model and judge modes may use dedicated evaluation model credentials, but continue to mock Daily, Supabase, Highway, KCH, Cognito, Slack, storage, and transfer operations. If the judge credential is unavailable, deterministic evaluations still run and the report records `skipped_unavailable`. The engine also supports grading saved traces without rerunning the agent.
 
 ## Diagnostics and artifacts
 

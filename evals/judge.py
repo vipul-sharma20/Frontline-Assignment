@@ -72,6 +72,13 @@ _SCHEMA = {
 }
 
 
+def judge_availability() -> tuple[bool, str]:
+    """Return availability without exposing credential contents."""
+    if not os.getenv("OPENAI_API_KEY"):
+        return False, "OPENAI_API_KEY is not configured; LLM judging was skipped"
+    return True, "available"
+
+
 def _output_text(response: dict[str, Any]) -> str:
     for item in response.get("output", []):
         if item.get("type") != "message":
@@ -83,9 +90,10 @@ def _output_text(response: dict[str, Any]) -> str:
 
 
 def judge_case(case: EvalCase, grade: Grade) -> JudgeResult:
-    api_key = os.getenv("OPENAI_API_KEY")
-    if not api_key:
-        raise RuntimeError("OPENAI_API_KEY is required only when --judge is used")
+    available, reason = judge_availability()
+    if not available:
+        raise RuntimeError(reason)
+    api_key = os.environ["OPENAI_API_KEY"]
     model = os.getenv("EVAL_JUDGE_MODEL", "gpt-5.1")
     evidence = {
         "scenario": {

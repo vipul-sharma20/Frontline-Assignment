@@ -64,7 +64,7 @@
       "total": 1
     }
   },
-  "generated_at": "2026-09-24T17:42:51.952673+00:00",
+  "generated_at": "2026-09-24T17:55:36.114266+00:00",
   "grades": [
     {
       "blocking": true,
@@ -459,8 +459,25 @@
       "score": 1.0
     }
   ],
+  "isolation": {
+    "business_boundaries": "explicit_in_memory_fakes",
+    "business_network_calls": 0,
+    "judge_network_possible": false,
+    "model_network_possible": false,
+    "report_output_only": true,
+    "simulation_type": "text_only",
+    "transactional_database_writes": 0
+  },
+  "judge": {
+    "available": false,
+    "merge_blocking": false,
+    "reason": "OPENAI_API_KEY is not configured; LLM judging was skipped",
+    "requested": true,
+    "status": "skipped_unavailable",
+    "threshold": "verdict=pass and score>=4/5"
+  },
   "judgments": [],
-  "mode": "offline_replay",
+  "mode": "offline_replay_with_judge",
   "production_contract": {
     "prompt_source": "voice-agent/voice_prompt.py",
     "tool_names": [

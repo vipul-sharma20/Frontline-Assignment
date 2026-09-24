@@ -1,10 +1,12 @@
 from __future__ import annotations
 
 import unittest
+import os
 from dataclasses import replace
 from unittest.mock import patch
 
 from evals.graders import grade_case
+from evals.fakes import FakeServices
 from evals.models import Event, Trace
 from evals.production import load_production_contract
 from evals.runner import load_cases, run_cases
@@ -31,6 +33,13 @@ class EvaluationSuiteTests(unittest.TestCase):
         report = run_cases(list(self.cases.values()))
         self.assertTrue(report["summary"]["hard_pass"])
         self.assertEqual(report["summary"]["passed"], report["summary"]["total"])
+
+    def test_unavailable_judge_is_skipped_without_failing_code_grades(self):
+        with patch.dict(os.environ, {}, clear=True):
+            report = run_cases(list(self.cases.values()), use_judge=True)
+        self.assertTrue(report["summary"]["hard_pass"])
+        self.assertEqual(report["judge"]["status"], "skipped_unavailable")
+        self.assertEqual(report["judgments"], [])
 
     def test_above_max_ordinary_agreement_is_blocked(self):
         case = self.mutate_event(
@@ -123,6 +132,28 @@ class EvaluationSuiteTests(unittest.TestCase):
         self.assertEqual(api.call_count, 2)
         self.assertTrue(generated.trace.metadata["simulation"])
         self.assertTrue(grade_case(generated).passed)
+
+    def test_explicit_fakes_keep_writes_and_transfers_in_memory(self):
+        case = self.cases["standard_successful_call"]
+        fakes = FakeServices.for_case(case, {"id": "DEMO-1001"})
+        agreement, events = fakes.handle_tool(
+            "record_agreement",
+            {"agreed_price": 2050, "carrier_contact_name": "Sam", "carrier_contact_phone": "312-555-0188"},
+        )
+        transfer, _ = fakes.handle_tool(
+            "transfer_to_human", {"load_number": "DEMO-1001", "reason": "requested"}
+        )
+        report = fakes.report()
+        self.assertEqual(agreement["status"], "success")
+        self.assertEqual(transfer["status"], "transferring")
+        self.assertEqual([event.name for event in events], ["submit_quote", "submit_quote"])
+        self.assertEqual(report["cognito_calls"], 1)
+        self.assertEqual(report["quote_submissions"], 1)
+        self.assertEqual(report["transfers_scheduled_not_run"], 1)
+        self.assertEqual(report["transactional_database_writes"], 0)
+        self.assertEqual(report["business_network_calls"], 0)
+        self.assertEqual(fakes.phone_first.lookup("+13125550199")["status"], "unknown")
+        self.assertEqual(len(fakes.phone_first.calls), 1)
 
 
 if __name__ == "__main__":

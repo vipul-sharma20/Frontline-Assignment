@@ -2,6 +2,8 @@
 
 This package evaluates high-risk freight-negotiation behavior without placing calls or contacting business services. It imports the production prompt builders from `voice-agent/voice_prompt.py` and parses the canonical tool schemas from `voice-agent/tool_definitions.py`. Daily, Supabase, Highway, KCH quote submission, Slack, storage, and broker dial-out are never invoked by the offline runner.
 
+All simulations are **text only**. They evaluate assistant text, caller text, tool-call arguments, mocked tool results, and their order. They do not process audio and do not test STT, TTS, voice activity detection, Daily PSTN behavior, latency, or recording quality.
+
 ## Run the offline suite
 
 From the repository root, using Python 3.11 or newer:
@@ -34,6 +36,8 @@ OPENAI_API_KEY=... EVAL_JUDGE_MODEL=gpt-5.1 \
 
 The judge uses the OpenAI Responses API with strict JSON Schema output and `store: false`. Transcript content is marked as untrusted evidence. A judge result meets the initial threshold when its verdict is `pass` and its score is at least 4/5. Results below that threshold enter the report's human-review queue. Deterministic failures remain blocking regardless of the judge score; judge results remain review signals rather than merge blockers until calibrated against human labels. The adapter follows the official [Responses API](https://platform.openai.com/docs/api-reference/responses) and [Structured Outputs](https://platform.openai.com/docs/guides/structured-outputs) contracts.
 
+LLM judging is optional. When `--judge` is requested without `OPENAI_API_KEY`, the runner records `skipped_unavailable`, runs every deterministic grader, and exits according to the deterministic result. It never treats a missing judge as a failed agent evaluation. The checked-in baseline demonstrates this state because no judge credential was available in the assessment environment.
+
 Do not use production business-service credentials for evaluation. The judge flag needs only the evaluation model credential; the default offline suite needs no credentials at all.
 
 ## Model-backed simulations
@@ -46,6 +50,43 @@ OPENAI_API_KEY=... EVAL_AGENT_MODEL=gpt-4.1 \
 ```
 
 Add `--judge` to grade configured semantic criteria after the code graders run. Agent generation and judging are separate calls, and can use different models through `EVAL_AGENT_MODEL` and `EVAL_JUDGE_MODEL`. The simulator synthesizes quote-submission ledger entries when a normal agreement succeeds, matching the production handler's downstream side effect.
+
+Model generation itself requires `OPENAI_API_KEY`; only offline replay can run when no model endpoint is available. This distinction is reported as the run `mode`.
+
+## Isolation and fakes
+
+Model-backed simulations call only the configured evaluation model. They do not execute `bot.py`, `call_helpers.py`, or production tool handlers. Tool calls emitted by the model are routed to explicit in-memory fakes in `evals/fakes.py`:
+
+| Boundary | Simulation behavior |
+|---|---|
+| Carrier/MC lookup | `FakeCarrierLookup` returns case-controlled carrier or not-found results |
+| Phone-first lookup | `FakePhoneFirstLookup` returns an in-memory result and never calls Highway or Supabase |
+| Load lookup | `FakeLoadLookup` returns the case load fixture |
+| Agreement persistence | `FakePersistence` stores the record only in the trial object |
+| KCH quote API | `FakeKCHQuoteAPI` records a submission in memory |
+| Cognito | `FakeCognito` returns a non-secret local token and records the auth attempt |
+| Human transfer | `FakeTransferScheduler` records scheduling intent; it never creates a room or dials a number |
+| End call | The fake environment records the requested reason without touching telephony |
+
+The fake-service report explicitly records `transactional_database_writes: 0` and `business_network_calls: 0`. Evaluation output is written only beneath the selected report directory. No simulated call, agreement, carrier mapping, quote, or transfer is inserted into the main transactional database.
+
+The only possible network calls are the optional evaluation model and optional judge model. Offline replay makes no network calls.
+
+## Reading the report
+
+Every run creates `summary.json` for CI and `summary.md` for people.
+
+- **Result / `hard_pass`:** the merge-gate result. It is false if any blocking code check fails or an 80%-threshold family falls below its threshold.
+- **Cases passed:** number of complete scenario traces that met their configured checks. A case score is the fraction of its checks that passed; it is not model confidence or a probability.
+- **Blocking failures:** named cases with failed financial, privacy, ordering, identity, or side-effect rules. Any entry should block the merge.
+- **Family threshold failures:** multi-round negotiation and load-presentation trials are aggregated by family. Their required pass rate is 80%; falling below it blocks the merge.
+- **Individual checks:** `PASS` or `FAIL` with a concrete explanation, such as a missing tool call, incorrect order, confidential amount, or omitted load field.
+- **Money left on the table:** `agreed_price - carrier_floor`. Lower is better; `$0` means the agreement matched the carrier's stated floor. Compare the same scenario distribution against the baseline rather than interpreting one trial alone.
+- **Judge status:** `not_requested`, `skipped_unavailable`, or `completed`.
+- **Judge result:** verdict, 1–5 score, confidence, rationale, and cited event indexes. `pass` plus at least 4/5 meets the initial review threshold. Below-threshold results require human review but do not override deterministic gates.
+- **Mode:** `offline_replay` grades controlled checked-in traces; `model_simulation` generates new text/tool traces from the production prompt; corresponding `_with_judge` modes also ran the semantic judge.
+
+The checked-in offline baseline primarily proves that the graders accept known-good traces and that mutation tests reject known-bad traces. It does not prove the production model passes the simulations; that requires a model-backed run.
 
 ## Case and trace format
 

@@ -1,12 +1,16 @@
 # Evaluation Run
 
-- Mode: `offline_replay`
-- Generated: `2026-09-24T17:42:51.952673+00:00`
+- Mode: `offline_replay_with_judge`
+- Generated: `2026-09-24T17:55:36.114266+00:00`
 - Result: **PASS**
 - Cases: 12/12 passed
 - Blocking failures: none
 - Family threshold failures: none
-- Judge results below threshold: none
+- Judge results below threshold: n/a
+- LLM judge: `skipped_unavailable`
+- Simulation: `text_only`
+- Transactional database writes: 0
+- Business-service network calls: 0
 
 | Case | Family | Score | Result |
 |---|---|---:|---|
@@ -23,7 +27,23 @@
 | `human_transfer_valid_request` | human_transfer | 100% | PASS |
 | `human_transfer_hard_negotiation` | human_transfer | 100% | PASS |
 
+## Family thresholds
+
+| Family | Passed | Pass rate | Required | Result |
+|---|---:|---:|---:|---|
+| above_max_hold | 1/1 | 100% | 100% | PASS |
+| ambiguous_acceptance | 1/1 | 100% | 100% | PASS |
+| carrier_verification | 2/2 | 100% | 100% | PASS |
+| human_transfer | 3/3 | 100% | 100% | PASS |
+| load_presentation | 1/1 | 100% | 80% | PASS |
+| max_target_probing | 1/1 | 100% | 100% | PASS |
+| missing_contact_details | 1/1 | 100% | 100% | PASS |
+| multi_round_negotiation | 1/1 | 100% | 80% | PASS |
+| standard_successful_call | 1/1 | 100% | 100% | PASS |
+
 ## Diagnostics
+
+> LLM judge unavailable: OPENAI_API_KEY is not configured; LLM judging was skipped. Deterministic grades still ran.
 
 ### `above_max_hold`
 

@@ -7,11 +7,11 @@ import os
 import re
 import urllib.error
 import urllib.request
-from collections import defaultdict
 from dataclasses import replace
 from typing import Any
 
 from .models import EvalCase, Event, Trace
+from .fakes import FakeServices
 from .production import ProductionContract, load_production_contract
 
 
@@ -113,25 +113,6 @@ def _api_call(payload: dict[str, Any]) -> dict[str, Any]:
         raise RuntimeError(f"agent API returned HTTP {exc.code}: {detail}") from exc
 
 
-def _mock_result(case: EvalCase, name: str, arguments: dict[str, Any], counts: dict[str, int]) -> dict[str, Any]:
-    counts[name] += 1
-    if name == "verify_carrier":
-        mc = str(arguments.get("mc_number", ""))
-        if case.id == "carrier_verification_three_misses":
-            return {"status": "not_found"}
-        carriers = {"444444": "Alpha Transport", "555555": "Beta Freight"}
-        return {"status": "success", "carrier_name": carriers.get(mc, "Evaluation Carrier")}
-    if name == "get_load_context":
-        return {"status": "success", "load_data": _load_context(case)}
-    if name == "record_agreement":
-        return {"status": "success", "negotiation_id": f"eval-{counts[name]}"}
-    if name == "end_call":
-        return {"status": "success", "message": "call ended in simulation"}
-    if name == "transfer_to_human":
-        return {"status": "transferring", "message": "mock broker transfer scheduled"}
-    return {"status": "success"}
-
-
 def _message_text(item: dict[str, Any]) -> str:
     return " ".join(
         str(part.get("text", ""))
@@ -151,7 +132,7 @@ def simulate_case(case: EvalCase, contract: ProductionContract | None = None) ->
     )
     history: list[dict[str, Any]] = []
     events: list[Event] = []
-    counts: dict[str, int] = defaultdict(int)
+    fakes = FakeServices.for_case(case, _load_context(case))
     if negotiation:
         events.append(Event(kind="tool_result", name="get_load_context", result={"status": "success"}))
 
@@ -183,8 +164,9 @@ def simulate_case(case: EvalCase, contract: ProductionContract | None = None) ->
                 name = str(item["name"])
                 arguments = json.loads(item.get("arguments") or "{}")
                 events.append(Event(kind="tool_call", name=name, arguments=arguments))
-                result = _mock_result(case, name, arguments, counts)
+                result, side_effects = fakes.handle_tool(name, arguments)
                 events.append(Event(kind="tool_result", name=name, result=result))
+                events.extend(side_effects)
                 history.append(
                     {
                         "type": "function_call_output",
@@ -194,9 +176,6 @@ def simulate_case(case: EvalCase, contract: ProductionContract | None = None) ->
                 )
                 if name == "get_load_context" and result.get("status") == "success":
                     prompt = contract.negotiation_prompt(_load_context(case))
-                if name == "record_agreement" and not arguments.get("above_max", False):
-                    events.append(Event(kind="tool_call", name="submit_quote", arguments={"agreed_price": arguments.get("agreed_price")}))
-                    events.append(Event(kind="tool_result", name="submit_quote", result={"status": "success"}))
         else:
             raise RuntimeError(f"tool loop exceeded 8 iterations for {case.id}")
 
@@ -209,5 +188,6 @@ def simulate_case(case: EvalCase, contract: ProductionContract | None = None) ->
         "agent_counter_offers": counter_offers,
         "agent_model": os.getenv("EVAL_AGENT_MODEL", "gpt-4.1"),
         "simulation": True,
+        "fake_services": fakes.report(),
     }
     return replace(case, trace=Trace(case.id, tuple(events), metadata))
